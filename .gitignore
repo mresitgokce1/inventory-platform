@@ -6,6 +6,11 @@ __pycache__/
 *.sqlite3
 *.log
 
+# Test and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
 # Environments
 .env
 .venv/
