@@ -12,4 +12,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", health_check, name="health"),
     path("api/", include("apps.accounts.urls", namespace="accounts")),
+    path("api/", include("apps.brands.urls", namespace="brands")),
+    path("api/", include("apps.stores.urls", namespace="stores")),
+    path("api/", include("apps.products.urls", namespace="products")),
 ]

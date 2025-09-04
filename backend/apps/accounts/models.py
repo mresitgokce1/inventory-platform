@@ -52,6 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampMixin, SoftDeleteMixin):
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="STAFF")
+    brand = models.ForeignKey('brands.Brand', on_delete=models.CASCADE, null=True, blank=True, related_name='users')
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
@@ -81,3 +82,9 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampMixin, SoftDeleteMixin):
     def is_system_admin(self):
         """Check if user is a system administrator."""
         return self.role == SYSTEM_ADMIN
+    
+    def get_brand(self):
+        """Get the user's brand. SYSTEM_ADMIN users have no brand restriction."""
+        if self.is_system_admin():
+            return None
+        return self.brand
