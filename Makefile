@@ -1,18 +1,18 @@
 .PHONY: install backend test format lint
 
 install:
-\tpython -m venv .venv && . .venv/bin/activate && pip install -r backend/requirements.txt
+	python -m venv .venv && . .venv/bin/activate && pip install -r backend/requirements.txt
 
 backend:
-\tcd backend && python manage.py runserver
+	cd backend && python manage.py runserver
 
 test:
-\tpytest -q
+	cd backend && pytest -q
 
 format:
-\tblack .
-\tisort .
+	black backend
+	isort backend
 
 lint:
-\tblack --check .
-\tisort --check .
+	black --check backend
+	isort --check backend

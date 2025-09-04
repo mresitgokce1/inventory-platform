@@ -12,15 +12,28 @@ This repository will host a multi-brand (Brand → Store → Warehouse/Shelf) in
 - Auth: JWT (15m access, rotating refresh ~7d), strong password policy, rate limiting
 - Soft delete & restore for users and products
 
-## Getting Started (After PR1)
-(Do these only after PR1 is merged and code exists)
-```
+## Getting Started
+
+The backend Django skeleton is now set up! Follow these steps to run the development server:
+
+```bash
+# Install dependencies
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r backend/requirements.txt
+
+# Run migrations
 cd backend
+python manage.py migrate
+
+# Start development server
 python manage.py runserver
+
+# Run tests
 pytest
+
+# Check the health endpoint
+curl http://127.0.0.1:8000/health/
 ```
 
 ## Development Flow (Using Copilot Agents)
