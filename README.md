@@ -1,6 +1,58 @@
 # Inventory Platform (Multi-Brand Stock & Order Management)
 
-This repository will host a multi-brand (Brand → Store → Warehouse/Shelf) inventory & order management system.
+This repository hosts a multi-brand (Brand → Store → Warehouse/Shelf) inventory & order management system.
+
+## Domain Overview
+
+The platform is built around a multi-brand architecture with the following core entities:
+
+### Brand
+- **Purpose**: Top-level business entity that owns stores, categories, and products
+- **Key Features**: 
+  - Unique case-insensitive names
+  - Active/inactive status
+  - UUID-based identification
+- **Access Control**: Only SYSTEM_ADMIN can create/modify brands
+
+### Store
+- **Purpose**: Physical retail locations belonging to a brand
+- **Key Features**:
+  - Unique names and codes per brand (case-insensitive)
+  - Brand association (foreign key)
+  - Active/inactive status
+- **Access Control**: BRAND_MANAGER can create/manage stores within their brand
+
+### Category
+- **Purpose**: Hierarchical organization of products within a brand
+- **Key Features**:
+  - Parent-child relationships for hierarchical categories
+  - Unique names per brand (case-insensitive)
+  - Brand scoping ensures categories belong to specific brands
+- **Access Control**: BRAND_MANAGER can create/manage categories within their brand
+
+### Product
+- **Purpose**: Items available for sale within the inventory system
+- **Key Features**:
+  - Unique SKUs per brand (case-insensitive)
+  - Optional category association
+  - Brand scoping with validation
+  - Active/inactive status for inventory management
+- **Access Control**: BRAND_MANAGER can create/manage products within their brand
+
+## Role-Based Access Control
+
+| Role | Brand | Store | Category | Product | Description |
+|------|-------|-------|----------|---------|-------------|
+| **SYSTEM_ADMIN** | Full CRUD | Full CRUD | Full CRUD | Full CRUD | Complete access across all brands |
+| **BRAND_MANAGER** | Read only (own brand) | Full CRUD (own brand) | Full CRUD (own brand) | Full CRUD (own brand) | Manage all aspects within assigned brand |
+| **STORE_MANAGER** | Read only (own brand) | Update only (own stores) | Read only (own brand) | Read only (own brand) | Limited to store management and read-only access |
+| **STAFF** | Read only (own brand) | Read only (own brand) | Read only (own brand) | Read only (own brand) | Read-only access within assigned brand |
+
+### Brand Scoping
+- Non-admin users are automatically scoped to their assigned brand
+- All data queries are filtered to show only relevant brand data
+- Cross-brand access attempts return 403 Forbidden
+- SYSTEM_ADMIN users see data across all brands
 
 ## High-Level Vision
 - Roles: SystemAdmin, BrandManager, StoreManager, Staff, Public (QR)
@@ -97,6 +149,70 @@ curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   http://localhost:8000/api/users/
 ```
 
+## Domain API Usage Examples
+
+### List Brands (Admin sees all, others see only their brand)
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  http://localhost:8000/api/brands/
+```
+
+### Create a Brand (SYSTEM_ADMIN only)
+```bash
+curl -X POST http://localhost:8000/api/brands/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "New Brand",
+    "is_active": true
+  }'
+```
+
+### Create a Store (BRAND_MANAGER within their brand)
+```bash
+curl -X POST http://localhost:8000/api/stores/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "brand": "brand-uuid-here",
+    "name": "Downtown Store",
+    "code": "DT001",
+    "is_active": true
+  }'
+```
+
+### Create a Category with Parent
+```bash
+curl -X POST http://localhost:8000/api/categories/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "brand": "brand-uuid-here",
+    "name": "Smartphones",
+    "parent": "parent-category-uuid-here"
+  }'
+```
+
+### Create a Product
+```bash
+curl -X POST http://localhost:8000/api/products/ \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "brand": "brand-uuid-here",
+    "sku": "PHONE001",
+    "name": "iPhone 15",
+    "category": "category-uuid-here",
+    "is_active": true
+  }'
+```
+
+### Filter Active Products
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "http://localhost:8000/api/products/?is_active=true"
+```
+
 ## Authentication Features
 
 - **Custom User Model**: UUID-based ID, email login, role-based access
@@ -121,6 +237,34 @@ curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
 - `PUT /api/users/me/` - Update current user profile
 - `GET /api/users/` - List all users (System Admin only)
 
+### Domain Endpoints
+- `GET|POST /api/brands/` - List/create brands
+- `GET|PUT|PATCH|DELETE /api/brands/{id}/` - Retrieve/update/delete specific brand
+- `GET|POST /api/stores/` - List/create stores
+- `GET|PUT|PATCH|DELETE /api/stores/{id}/` - Retrieve/update/delete specific store
+- `GET|POST /api/categories/` - List/create categories
+- `GET|PUT|PATCH|DELETE /api/categories/{id}/` - Retrieve/update/delete specific category
+- `GET|POST /api/products/` - List/create products
+- `GET|PUT|PATCH|DELETE /api/products/{id}/` - Retrieve/update/delete specific product
+
+### Query Parameters
+- `?is_active=true|false` - Filter by active status (brands, stores, products)
+
+## Deferred Features
+
+The following features are documented for future implementation:
+
+- **Inventory Tracking**: Stock levels, warehouse/shelf allocation, stock movements
+- **Product Variants**: Size, color, and other attribute variations
+- **Soft Delete Unification**: Consistent soft delete across all domain models
+- **Advanced Search**: Full-text search, filtering, and sorting capabilities
+- **Deep Category Optimization**: Performance optimization for deeply nested categories
+- **Multilingual Support**: Product and category names in multiple languages
+- **QR Code Generation**: Automatic QR code generation for products
+- **Price History**: Track and maintain product pricing history
+- **Order Management**: Complete order lifecycle management
+- **Audit Logging**: Comprehensive audit trail for all operations
+
 ## Development Flow (Using Copilot Agents)
 1. Review /prompts/PR1_backend_skeleton_prompt.md
 2. Open GitHub → Copilot → Agents → Select repo → Paste PR1 prompt → Run
@@ -139,4 +283,4 @@ See PR_CHECKLIST.md
 MIT (see LICENSE)
 
 ---
-Implemented: Custom User model, JWT authentication, role-based permissions, soft delete functionality
+**Implemented**: Custom User model, JWT authentication, role-based permissions, soft delete functionality, domain foundation (Brand, Store, Category, Product models), brand-scoped access control, REST API endpoints
