@@ -130,6 +130,18 @@ class BrandScopedPermission(permissions.BasePermission):
         },
         'Store': {
             STORE_MANAGER: ['GET', 'PUT', 'PATCH'],  # Can manage their own stores
+        },
+        'ProductStore': {
+            SYSTEM_ADMIN: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+            BRAND_MANAGER: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+            STORE_MANAGER: ['GET', 'PUT', 'PATCH'],  # Can update stock levels
+            STAFF: ['GET'],  # Read-only access to inventory
+        },
+        'StockMovement': {
+            SYSTEM_ADMIN: ['GET', 'POST', 'DELETE'],  # Can delete for data integrity
+            BRAND_MANAGER: ['GET', 'POST'],  # Can create movements
+            STORE_MANAGER: ['GET', 'POST'],  # Can create movements
+            STAFF: ['GET', 'POST'],  # Can create basic movements
         }
     }
     

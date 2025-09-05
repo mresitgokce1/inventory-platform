@@ -15,4 +15,5 @@ urlpatterns = [
     path("api/", include("apps.brands.urls", namespace="brands")),
     path("api/", include("apps.stores.urls", namespace="stores")),
     path("api/", include("apps.products.urls", namespace="products")),
+    path("api/", include("apps.inventory.urls", namespace="inventory")),
 ]
